@@ -2,13 +2,18 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
 
+// added team profiles
+const Manager = require('./lib/Manager');
+const Engineer = require('./lib/Engineer');
+const Intern = require('./lib/Intern');
+
 // link to page-template
 const generateHTML = require('./src/page-template.js');
 
 // array to store data
 const teamArray = [];
 
-// function prompts user for info for manager and creates object from inputs
+// function prompts user for info for manager
 const addManager = () => {
     return inquirer.prompt([
         {
@@ -32,13 +37,13 @@ const addManager = () => {
             message: `What is your team manager's office number?`
         }
     ])
-    // .then(data => {
-    //     const {name, id, email, officeNumber} = data;
-    //     const manager = new Manager (name, id, email, officeNumber)
+    .then(data => {
+        const {name, id, email, officeNumber} = data;
+        const manager = new Manager (name, id, email, officeNumber)
 
-    //     // pushing inputs for manager into teamArray
-    //     teamArray.push(manager);
-    // })
+        // pushing inputs for manager into teamArray
+        teamArray.push(manager);
+    })
 }
 
 // function to prompt user to add employee
@@ -62,7 +67,8 @@ const addEmployee = () => {
         } else if (data.role === 'Intern') {
             addIntern();
         } else if (data.role === `I don't want to add any more team members`) {
-            return 
+            var content = generateHTML(teamArray)
+            writeToFile(content);
         }
     })
 }
@@ -91,11 +97,11 @@ const addEngineer = () => {
             message: `What is your engineer's GitHub username?`
         }
     ])
-    // .then(data => {
-    //     const {name, id, email, gitHub} = data;
-    //     const engineer = new Engineer (name, id, email, gitHub)
-    //     teamArray.push(engineer);
-    // })
+    .then(data => {
+        const {name, id, email, gitHub} = data;
+        const engineer = new Engineer (name, id, email, gitHub)
+        teamArray.push(engineer);
+    })
     // calls addEmployee prompts
     .then(addEmployee)
 }
@@ -124,21 +130,28 @@ const addIntern = () => {
             message: `What is your intern's school name?`
         }
     ])
-    // .then(data => {
-    //     const {name, id, email, gitHub} = data;
-    //     const engineer = new Engineer (name, id, email, gitHub)
-    //     teamArray.push(engineer);
-    // })
+    .then(data => {
+        const {name, id, email, school} = data;
+        const intern = new Intern (name, id, email, school)
+        teamArray.push(intern);
+    })
     .then(addEmployee)
+}
+
+// function to write HTML file
+function writeToFile(data) {
+    fs.writeFileSync('./dist/index.html', data)
+    console.log("Team profile has been successfully generated!");
+    console.log("View generated team profile at index.html");
 }
 
 // function to initialize app
 function init() {
     addManager()
         .then(addEmployee)
-        // add generateHTML and writefile
         .catch((err) => console.error(err))
 }
 
 // function call to initialize app
 init();
+
